@@ -1,16 +1,450 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../../assets/images/capybara.JPG">
-    <title>My study space</title>
-
+    <title>Study - Thời khóa biểu</title>
     <link rel="stylesheet" href="../../main.css">
     <script type="module" src="../../javascript.js"></script>
+    <style>
+        .timetable-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .timetable-header, .timetable-time {
+            background: var(--bg-tertiary);
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+
+        .timetable-cell {
+            background: var(--card-bg);
+            min-height: 80px;
+            padding: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .timetable-cell:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .timetable-cell.has-class {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(59, 130, 246, 0.1));
+            border-left: 3px solid var(--accent);
+        }
+
+        .class-block {
+            background: rgba(34, 211, 238, 0.15);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            position: relative;
+        }
+
+        .class-block .subject { font-weight: bold; color: var(--accent); }
+        .class-block .room { color: var(--fg-secondary); font-size: 0.7rem; }
+        .class-block .delete-btn {
+            position: absolute;
+            top: 2px; right: 4px;
+            background: none; border: none;
+            color: var(--fg-secondary); cursor: pointer;
+            font-size: 0.7rem; padding: 2px;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .class-block:hover .delete-btn { opacity: 1; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s;
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%; max-width: 480px;
+            transform: scale(0.9); transition: transform 0.3s;
+        }
+        .modal-overlay.open .modal { transform: scale(1); }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; color: var(--fg-secondary); font-size: 0.85rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .time-slots { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .time-slot {
+            background: var(--bg-tertiary); border: 1px solid var(--border);
+            padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .time-slot.selected { background: var(--accent); color: var(--bg-primary); border-color: var(--accent); }
+
+        .weekday-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 8px; }
+        .weekday-tab {
+            padding: 10px 20px; background: var(--bg-tertiary);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--fg-secondary); cursor: pointer; white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .weekday-tab.active { background: var(--accent); color: var(--bg-primary); border-color: var(--accent); }
+        .weekday-tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+        .pomodoro-section { margin-top: 32px; }
+        .pomodoro-timer {
+            text-align: center; padding: 40px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid var(--accent); border-radius: 16px;
+        }
+        .pomodoro-time { font-size: 5rem; font-weight: bold; color: var(--accent); font-family: 'Minecraft', monospace; }
+        .pomodoro-controls { display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+        .pomodoro-mode { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+        .mode-btn { padding: 8px 16px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; color: var(--fg-secondary); cursor: pointer; }
+        .mode-btn.active { background: var(--accent); color: var(--bg-primary); border-color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .timetable-grid { grid-template-columns: 60px repeat(7, minmax(100px, 1fr)); }
+            .pomodoro-time { font-size: 3rem; }
+        }
+    </style>
 </head>
 <body>
     <div id="navbar" style="height: 60px;"></div>
     <div id="sidebar" style="min-height: calc(100vh - 60px);"></div>
+    <main class="main-container">
+        <h1 class="section-title">📚 Study - Thời khóa biểu</h1>
+
+        <!-- Weekday tabs -->
+        <div class="weekday-tabs" id="weekday-tabs"></div>
+
+        <!-- Timetable -->
+        <div class="card" style="overflow-x: auto;">
+            <div class="timetable-grid" id="timetable-grid"></div>
+        </div>
+
+        <!-- Pomodoro Timer -->
+        <section class="pomodoro-section">
+            <h2 class="section-title">⏱️ Pomodoro Timer</h2>
+            <div class="card pomodoro-timer">
+                <div class="pomodoro-mode">
+                    <button class="mode-btn active" data-mode="pomodoro">Pomodoro (25:00)</button>
+                    <button class="mode-btn" data-mode="short">Nghỉ ngắn (5:00)</button>
+                    <button class="mode-btn" data-mode="long">Nghỉ dài (15:00)</button>
+                </div>
+                <div class="pomodoro-time" id="pomodoro-time">25:00</div>
+                <div class="pomodoro-controls">
+                    <button class="btn btn-primary" id="pomodoro-start">Bắt đầu</button>
+                    <button class="btn btn-secondary" id="pomodoro-pause" disabled>Tạm dừng</button>
+                    <button class="btn btn-secondary" id="pomodoro-reset">Reset</button>
+                </div>
+                <div style="margin-top: 16px; color: var(--fg-secondary); font-size: 0.9rem;">
+                    Chu kỳ hoàn thành: <span id="pomodoro-cycles">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Notes -->
+        <section style="margin-top: 32px;">
+            <h2 class="section-title">📝 Ghi chú nhanh</h2>
+            <div class="card">
+                <textarea id="quick-notes" class="input" rows="6" placeholder="Ghi chú cho ngày hôm nay..."></textarea>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Class Modal -->
+    <div class="modal-overlay" id="class-modal">
+        <div class="modal">
+            <h2 style="margin-bottom: 20px; color: var(--accent);">➕ Thêm / Sửa môn học</h2>
+            <form id="class-form">
+                <input type="hidden" id="class-day" name="day">
+                <input type="hidden" id="class-time" name="time">
+                <input type="hidden" id="class-index" name="index">
+
+                <div class="form-group">
+                    <label>Tên môn học</label>
+                    <input type="text" class="input" name="subject" required placeholder="Ví dụ: Toán cao cấp, Lập trình Web...">
+                </div>
+                <div class="form-group">
+                    <label>Phòng học</label>
+                    <input type="text" class="input" name="room" placeholder="Ví dụ: A301, Lab 2, Online...">
+                </div>
+                <div class="form-group">
+                    <label>Màu sắc</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="color" name="color" value="#22d3ee" style="width: 50px; height: 40px; border: none; border-radius: 8px; cursor: pointer;">
+                        <span style="align-self: center; color: var(--fg-secondary); font-size: 0.85rem;">Mặc định: Cyan</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" id="modal-cancel">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ROOT } from '../../javascript.js';
+
+        const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
+        const TIME_SLOTS = [
+            '07:00-08:30', '08:30-10:00', '10:15-11:45', '11:45-13:15',
+            '13:15-14:45', '14:45-16:15', '16:30-18:00', '18:00-19:30', '19:30-21:00'
+        ];
+
+        let timetable = JSON.parse(localStorage.getItem('study-timetable') || '{}');
+        let currentDay = DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+
+        // Initialize empty days
+        DAYS.forEach(d => { if (!timetable[d]) timetable[d] = []; });
+
+        // Render weekday tabs
+        const tabsContainer = document.getElementById('weekday-tabs');
+        DAYS.forEach((day, i) => {
+            const btn = document.createElement('button');
+            btn.className = `weekday-tab ${day === currentDay ? 'active' : ''}`;
+            btn.textContent = day;
+            btn.onclick = () => switchDay(day);
+            tabsContainer.appendChild(btn);
+        });
+
+        function switchDay(day) {
+            currentDay = day;
+            document.querySelectorAll('.weekday-tab').forEach(b => b.classList.toggle('active', b.textContent === day));
+            renderTimetable();
+        }
+
+        // Render timetable grid
+        function renderTimetable() {
+            const grid = document.getElementById('timetable-grid');
+            grid.innerHTML = '';
+
+            // Header row
+            grid.innerHTML += '<div class="timetable-header">Thời gian</div>';
+            DAYS.forEach(d => grid.innerHTML += `<div class="timetable-header">${d}</div>`);
+
+            // Time rows
+            TIME_SLOTS.forEach((time, ti) => {
+                grid.innerHTML += `<div class="timetable-time">${time}</div>`;
+                DAYS.forEach((day, di) => {
+                    const classes = timetable[day].filter(c => c.time === time);
+                    const cellClass = classes.length ? 'timetable-cell has-class' : 'timetable-cell';
+                    grid.innerHTML += `
+                        <div class="${cellClass}" data-day="${day}" data-time="${time}" data-row="${ti}" data-col="${di}">
+                            ${classes.map((c, idx) => `
+                                <div class="class-block" style="border-left-color: ${c.color}; background: ${c.color}22;" data-index="${idx}">
+                                    <div class="subject">${c.subject}</div>
+                                    ${c.room ? `<div class="room">${c.room}</div>` : ''}
+                                    <button class="delete-btn" onclick="event.stopPropagation(); deleteClass('${day}', '${time}', ${idx})">×</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                });
+            });
+
+            // Add click handlers to cells
+            grid.querySelectorAll('.timetable-cell').forEach(cell => {
+                cell.onclick = () => openModal(cell.dataset.day, cell.dataset.time);
+            });
+        }
+
+        // Modal handling
+        const modal = document.getElementById('class-modal');
+        const form = document.getElementById('class-form');
+
+        function openModal(day, time, index = null) {
+            document.getElementById('class-day').value = day;
+            document.getElementById('class-time').value = time;
+            document.getElementById('class-index').value = index !== null ? index : '';
+
+            if (index !== null) {
+                const cls = timetable[day].find((c, i) => c.time === time && i === index);
+                if (cls) {
+                    form.subject.value = cls.subject;
+                    form.room.value = cls.room || '';
+                    form.color.value = cls.color;
+                }
+            } else {
+                form.reset();
+                form.color.value = '#22d3ee';
+            }
+
+            modal.classList.add('open');
+            form.subject.focus();
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+        }
+
+        document.getElementById('modal-cancel').onclick = closeModal;
+        modal.onclick = e => { if (e.target === modal) closeModal(); };
+
+        form.onsubmit = e => {
+            e.preventDefault();
+            const day = form.day.value;
+            const time = form.time.value;
+            const index = form.index.value;
+            const newClass = {
+                subject: form.subject.value,
+                room: form.room.value,
+                color: form.color.value,
+                time: time
+            };
+
+            if (index !== '') {
+                // Update existing - find by time and index
+                let idx = 0;
+                timetable[day] = timetable[day].filter((c, i) => {
+                    if (c.time === time && idx === parseInt(index)) {
+                        idx++; return false;
+                    }
+                    if (c.time === time) idx++;
+                    return true;
+                });
+                timetable[day].push(newClass);
+            } else {
+                timetable[day].push(newClass);
+            }
+
+            // Sort by time
+            timetable[day].sort((a, b) => TIME_SLOTS.indexOf(a.time) - TIME_SLOTS.indexOf(b.time));
+
+            localStorage.setItem('study-timetable', JSON.stringify(timetable));
+            closeModal();
+            renderTimetable();
+            updateDashboardStats();
+        };
+
+        window.deleteClass = function(day, time, index) {
+            if (!confirm('Xóa môn học này?')) return;
+            let idx = 0;
+            timetable[day] = timetable[day].filter((c, i) => {
+                if (c.time === time && idx === index) { idx++; return false; }
+                if (c.time === time) idx++;
+                return true;
+            });
+            localStorage.setItem('study-timetable', JSON.stringify(timetable));
+            renderTimetable();
+            updateDashboardStats();
+        };
+
+        // Pomodoro Timer
+        const POMODORO_TIMES = { pomodoro: 25 * 60, short: 5 * 60, long: 15 * 60 };
+        let pomodoroMode = 'pomodoro';
+        let pomodoroTimeLeft = POMODORO_TIMES.pomodoro;
+        let pomodoroInterval = null;
+        let pomodoroCycles = parseInt(localStorage.getItem('pomodoro-cycles') || '0');
+
+        const timeDisplay = document.getElementById('pomodoro-time');
+        const cyclesDisplay = document.getElementById('pomodoro-cycles');
+
+        function updatePomodoroDisplay() {
+            const m = Math.floor(pomodoroTimeLeft / 60).toString().padStart(2, '0');
+            const s = (pomodoroTimeLeft % 60).toString().padStart(2, '0');
+            timeDisplay.textContent = `${m}:${s}`;
+        }
+        cyclesDisplay.textContent = pomodoroCycles;
+        updatePomodoroDisplay();
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                pomodoroMode = btn.dataset.mode;
+                pomodoroTimeLeft = POMODORO_TIMES[pomodoroMode];
+                updatePomodoroDisplay();
+                resetTimer();
+            };
+        });
+
+        function startTimer() {
+            if (pomodoroInterval) return;
+            document.getElementById('pomodoro-start').disabled = true;
+            document.getElementById('pomodoro-pause').disabled = false;
+            pomodoroInterval = setInterval(() => {
+                pomodoroTimeLeft--;
+                updatePomodoroDisplay();
+                if (pomodoroTimeLeft <= 0) {
+                    clearInterval(pomodoroInterval);
+                    pomodoroInterval = null;
+                    if (pomodoroMode === 'pomodoro') {
+                        pomodoroCycles++;
+                        cyclesDisplay.textContent = pomodoroCycles;
+                        localStorage.setItem('pomodoro-cycles', pomodoroCycles.toString());
+                        updateDashboardStats();
+                        alert('🎉 Pomodoro hoàn thành! Nghỉ ngơi nào.');
+                    } else {
+                        alert('⏰ Hết giờ nghỉ!');
+                    }
+                    resetTimer();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+            document.getElementById('pomodoro-start').disabled = false;
+            document.getElementById('pomodoro-pause').disabled = true;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            pomodoroTimeLeft = POMODORO_TIMES[pomodoroMode];
+            updatePomodoroDisplay();
+            document.getElementById('pomodoro-start').disabled = false;
+            document.getElementById('pomodoro-pause').disabled = true;
+        }
+
+        document.getElementById('pomodoro-start').onclick = startTimer;
+        document.getElementById('pomodoro-pause').onclick = pauseTimer;
+        document.getElementById('pomodoro-reset').onclick = resetTimer;
+
+        // Quick notes
+        const notesEl = document.getElementById('quick-notes');
+        const todayKey = currentDay;
+        notesEl.value = localStorage.getItem(`study-notes-${todayKey}`) || '';
+        notesEl.oninput = () => localStorage.setItem(`study-notes-${todayKey}`, notesEl.value);
+
+        // Dashboard stats sync
+        function updateDashboardStats() {
+            const stats = JSON.parse(localStorage.getItem('study-stats') || '{}');
+            const subjects = new Set();
+            Object.values(timetable).flat().forEach(c => subjects.add(c.subject));
+            stats.subjects = subjects.size;
+            localStorage.setItem('study-stats', JSON.stringify(stats));
+        }
+
+        // Initial render
+        renderTimetable();
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+            if (e.key === ' ' && document.activeElement === document.body) {
+                e.preventDefault();
+                if (pomodoroInterval) pauseTimer(); else startTimer();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../../assets/images/capybara.JPG">
+    <title>Tools - Bộ công cụ học tập</title>
+    <link rel="stylesheet" href="../../main.css">
+    <script type="module" src="../../javascript.js"></script>
+    <style>
+        .tool-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tool-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px var(--accent);
+        }
+        .tool-title {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tool-content {
+            display: grid;
+            gap: 20px;
+        }
+        .tool-grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .tool-grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .tool-grid-4 { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 768px) {
+            .tool-grid-2, .tool-grid-3, .tool-grid-4 { grid-template-columns: 1fr; }
+        }
+        .input-small {
+            width: 80px;
+            text-align: center;
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        .canvas-border {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            cursor: crosshair;
+        }
+        .dice {
+            font-size: 3rem;
+            text-align: center;
+            margin: 16px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+        }
+        .wheel {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #22d3ee, #06b6d4, #22d3ee, #06b6d4, #22d3ee);
+            position: relative;
+            overflow: hidden;
+        }
+        .wheel::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 160px; height: 160px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        .wheel-spin {
+            transition: transform 3s ease-out;
+        }
+        .wheel-segment {
+            position: absolute;
+            width: 50%; height: 50%;
+            transform-origin: bottom right;
+            overflow: hidden;
+        }
+        .wheel-segment div {
+            width: 100%; height: 100%;
+            background: var(--accent);
+            transform: rotate(45deg) translateY(-35%);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--bg-primary);
+            padding-top: 40px;
+            box-sizing: border-box;
+        }
+        .alarm-time {
+            font-size: 2rem;
+            text-align: center;
+            margin: 16px 0;
+            font-family: 'Minecraft', monospace;
+            letter-spacing: 2px;
+        }
+        .timer-display {
+            font-size: 4rem;
+            text-align: center;
+            font-family: 'Minecraft', monospace;
+            margin: 20px 0;
+            color: var(--accent);
+        }
+        .countdown-display {
+            font-size: 3rem;
+            text-align: center;
+            font-family: 'Minecraft', monospace;
+            margin: 20px 0;
+            color: var(--accent);
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar" style="height: 60px;"></div>
+    <div id="sidebar" style="min-height: calc(100vh - 60px);"></div>
+    <main class="main-container">
+        <h1 class="section-title">🔧 Tools - Bộ công cụ học tập</h1>
+
+        <div class="tool-content tool-grid-2">
+            <!-- Scientific Calculator -->
+            <div class="tool-card">
+                <div class="tool-title">🧮 Máy tính Casio</div>
+                <div id="calculator">
+                    <input type="text" id="calc-display" class="input" readonly style="font-size: 1.5rem; text-align: right; margin-bottom: 12px; height: 48px;" value="0">
+                    <div class="grid grid-4" id="calc-buttons"></div>
+                </div>
+            </div>
+
+            <!-- Timer / Stopwatch -->
+            <div class="tool-card">
+                <div class="tool-title">⏱️ Đồng hồ đo thời gian</div>
+                <div class="timer-display" id="stopwatch-display">00:00:00</div>
+                <div class="controls">
+                    <button class="btn btn-primary" id="start-stopwatch">Bắt đầu</button>
+                    <button class="btn btn-secondary" id="stop-stopwatch" disabled>Dừng</button>
+                    <button class="btn btn-secondary" id="reset-stopwatch">Reset</button>
+                </div>
+                <small style="color: var(--fg-secondary);">Đánh dấu lap: <button class="btn btn-small" id="lap-stopwatch">Lap</button></small>
+                <div id="laps" style="margin-top: 12px; max-height: 150px; overflow-y: auto; font-size: 0.9rem;"></div>
+            </div>
+        </div>
+
+        <div class="tool-content tool-grid-2">
+            <!-- Countdown Timer -->
+            <div class="tool-card">
+                <div class="tool-title">⏳ Đếm ngược</div>
+                <div class="countdown-display" id="countdown-display">00:00:00</div>
+                <div style="margin-bottom: 16px;">
+                    <input type="number" id="countdown-hours" class="input-small" placeholder="giờ" min="0">
+                    <input type="number" id="countdown-minutes" class="input-small" placeholder="phút" min="0">
+                    <input type="number" id="countdown-seconds" class="input-small" placeholder="giây" min="0">
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" id="start-countdown">Bắt đầu</button>
+                    <button class="btn btn-secondary" id="stop-countdown" disabled>Dừng</button>
+                    <button class="btn btn-secondary" id="reset-countdown">Reset</button>
+                </div>
+            </div>
+
+            <!-- Alarm Clock -->
+            <div class="tool-card">
+                <div class="tool-title">⏰ Đặt báo thức</div>
+                <div class="alarm-time" id="alarm-display">--:--:--</div>
+                <div style="margin-bottom: 16px;">
+                    <input type="time" id="alarm-time-input" class="input" style="width: 200px;">
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" id="set-alarm">Đặt báo thức</button>
+                    <button class="btn btn-secondary" id="clear-alarm">Hủy báo thức</button>
+                </div>
+                <div id="alarm-status" style="margin-top: 12px; color: var(--fg-secondary); font-size: 0.9rem;"></div>
+            </div>
+        </div>
+
+        <div class="tool-content tool-grid-2">
+            <!-- Dice Roller (1-5 dice) -->
+            <div class="tool-card">
+                <div class="tool-title">🎲 Xúc xắc (1-5)</div>
+                <div style="margin-bottom: 16px;">
+                    <label for="dice-count" style="color: var(--fg-secondary);">Số xúc xắc:</label>
+                    <select id="dice-count" class="input" style="width: 80px;">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div class="dice" id="dice-result">⚀</div>
+                <div class="controls">
+                    <button class="btn btn-primary" id="roll-dice">Lăn xúc xắc</button>
+                </div>
+                <div style="margin-top: 12px; color: var(--fg-secondary); font-size: 0.9rem;" id="dice-sum"></div>
+            </div>
+
+            <!-- Wheel of Fortune -->
+            <div class="tool-card">
+                <div class="tool-title">🎡 Vòng quay may mắn</div>
+                <div class="wheel" id="wheel">
+                    <div class="wheel-segment" style="transform: rotate(0deg);"><div>May mắn</div></div>
+                    <div class="wheel-segment" style="transform: rotate(60deg);"><div>Thành công</div></div>
+                    <div class="wheel-segment" style="transform: rotate(120deg);"><div>Hạnh phúc</div></div>
+                    <div class="wheel-segment" style="transform: rotate(180deg);"><div>Tài lộc</div></div>
+                    <div class="wheel-segment" style="transform: rotate(240deg);"><div>Sức khỏe</div></div>
+                    <div class="wheel-segment" style="transform: rotate(300deg);"><div>Yêu thương</div></div>
+                </div>
+                <div class="controls" style="margin-top: 20px;">
+                    <button class="btn btn-primary" id="spin-wheel">Quay vòng</button>
+                </div>
+                <div id="wheel-result" style="margin-top: 16px; text-align: center; font-size: 1.2rem; color: var(--accent); min-height: 40px;"></div>
+            </div>
+        </div>
+
+        <div class="tool-content tool-grid-2">
+            <!-- Drawing Canvas -->
+            <div class="tool-card">
+                <div class="tool-title">🎨 Bảng vẽ</div>
+                <div class="canvas-border" id="drawing-canvas" width="500" height="300"></div>
+                <div class="controls" style="margin-top: 12px;">
+                    <button class="btn btn-secondary" id="clear-canvas">Xóa bảng</button>
+                    <button class="btn btn-secondary" id="download-canvas">Tải ảnh</button>
+                    <div style="margin-left: auto;">
+                        <label style="color: var(--fg-secondary); margin-right: 8px;">Màu:</label>
+                        <input type="color" id="pen-color" value="#22d3ee" style="width: 40px; height: 32px; border: none; border-radius: 4px;">
+                        <label style="color: var(--fg-secondary); margin: 0 8px;">Độ dày:</label>
+                        <input type="range" id="pen-width" min="1" max="10" value="2" style="width: 80px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simple Note Widget (optional) -->
+            <div class="tool-card">
+                <div class="tool-title">📝 Ghi chú nhanh</div>
+                <textarea id="tool-note" class="input" rows="8" placeholder="Ghi chú tạm thời..."></textarea>
+                <div class="controls" style="margin-top: 12px; justify-content: flex-end;">
+                    <button class="btn btn-secondary" id="clear-note">Xóa</button>
+                    <button class="btn btn-primary" id="save-note">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { ROOT } from '../../javascript.js';
+
+        // ========== Calculator ==========
+        const calcDisplay = document.getElementById('calc-display');
+        const calcButtons = document.getElementById('calc-buttons');
+
+        const buttons = [
+            ['C', '(', ')', '/'],
+            ['7', '8', '9', '*'],
+            ['4', '5', '6', '-'],
+            ['1', '2', '3', '+'],
+            ['0', '.', '%', '=']
+        ];
+
+        buttons.forEach(row => {
+            row.forEach(btnText => {
+                const btn = document.createElement('button');
+                btn.textContent = btnText;
+                btn.className = 'btn btn-secondary';
+                btn.style.flex = '1';
+                btn.onclick = () => handleCalc(btnText);
+                calcButtons.appendChild(btn);
+            });
+        });
+
+        let calcCurrent = '0';
+        let calcOperator = null;
+        let calcPrev = null;
+
+        function handleCalc(value) {
+            if (value === 'C') {
+                calcCurrent = '0';
+                calcOperator = null;
+                calcPrev = null;
+            } else if (value === '=') {
+                if (calcOperator && calcPrev !== null) {
+                    const prev = parseFloat(calcPrev);
+                    const current = parseFloat(calcCurrent);
+                    if (isNaN(prev) || isNaN(current)) {
+                        calcCurrent = 'Error';
+                    } else {
+                        let result;
+                        switch (calcOperator) {
+                            case '+': result = prev + current; break;
+                            case '-': result = prev - current; break;
+                            case '*': result = prev * current; break;
+                            case '/': result = current !== 0 ? prev / current : 'Error'; break;
+                            case '%': result = prev % current; break;
+                            default: result = current;
+                        }
+                        calcCurrent = result.toString();
+                        calcOperator = null;
+                        calcPrev = null;
+                    }
+                }
+            } else if (['+', '-', '*', '/', '%'].includes(value)) {
+                if (calcCurrent !== '0' && calcCurrent !== 'Error') {
+                    calcPrev = calcCurrent;
+                    calcOperator = value;
+                    calcCurrent = '0';
+                }
+            } else {
+                if (calcCurrent === '0' || calcCurrent === 'Error') {
+                    calcCurrent = value;
+                } else {
+                    calcCurrent += value;
+                }
+            }
+            calcDisplay.textContent = calcCurrent;
+        }
+
+        // ========== Stopwatch ==========
+        const stopwatchDisplay = document.getElementById('stopwatch-display');
+        const startStopwatchBtn = document.getElementById('start-stopwatch');
+        const stopStopwatchBtn = document.getElementById('stop-stopwatch');
+        const resetStopwatchBtn = document.getElementById('reset-stopwatch');
+        const lapStopwatchBtn = document.getElementById('lap-stopwatch');
+        const lapsDiv = document.getElementById('laps');
+
+        let stopwatchInterval = null;
+        let stopwatchTime = 0;
+        let lapTimes = [];
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const milliseconds = Math.floor((ms % 1000) / 10);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(2, '0')}`;
+        }
+
+        function updateStopwatch() {
+            stopwatchDisplay.textContent = formatTime(stopwatchTime);
+        }
+
+        startStopwatchBtn.onclick = () => {
+            if (stopwatchInterval) return;
+            stopwatchInterval = setInterval(() => {
+                stopwatchTime += 10;
+                updateStopwatch();
+            }, 10);
+            startStopwatchBtn.disabled = true;
+            stopStopwatchBtn.disabled = false;
+        };
+
+        stopStopwatchBtn.onclick = () => {
+            clearInterval(stopwatchInterval);
+            stopwatchInterval = null;
+            startStopwatchBtn.disabled = false;
+            stopStopwatchBtn.disabled = true;
+        };
+
+        resetStopwatchBtn.onclick = () => {
+            clearInterval(stopwatchInterval);
+            stopwatchInterval = null;
+            stopwatchTime = 0;
+            lapTimes = [];
+            updateStopwatch();
+            lapsDiv.innerHTML = '';
+            startStopwatchBtn.disabled = false;
+            stopStopwatchBtn.disabled = true;
+        };
+
+        lapStopwatchBtn.onclick = () => {
+            if (!stopwatchInterval) return;
+            lapTimes.push(stopwatchTime);
+            const lapNumber = lapTimes.length;
+            const lapTime = formatTime(stopwatchTime);
+            const lapElement = document.createElement('div');
+            lapElement.innerHTML = `<span>Lap ${lapNumber}: </span><span>${lapTime}</span>`;
+            lapsDiv.prepend(lapElement);
+        };
+
+        // ========== Countdown ==========
+        const countdownDisplay = document.getElementById('countdown-display');
+        const countdownHours = document.getElementById('countdown-hours');
+        const countdownMinutes = document.getElementById('countdown-minutes');
+        const countdownSeconds = document.getElementById('countdown-seconds');
+        const startCountdownBtn = document.getElementById('start-countdown');
+        const stopCountdownBtn = document.getElementById('stop-countdown');
+        const resetCountdownBtn = document.getElementById('reset-countdown');
+
+        let countdownInterval = null;
+        let countdownTime = 0;
+
+        function updateCountdown() {
+            if (countdownTime <= 0) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                countdownDisplay.textContent = '00:00:00';
+                startCountdownBtn.disabled = false;
+                stopCountdownBtn.disabled = true;
+                alert('⏰ Hết thời gian!');
+                return;
+            }
+            countdownTime -= 1000;
+            const totalSeconds = Math.floor(countdownTime / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            countdownDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        startCountdownBtn.onclick = () => {
+            const h = parseInt(countdownHours.value) || 0;
+            const m = parseInt(countdownMinutes.value) || 0;
+            const s = parseInt(countdownSeconds.value) || 0;
+            countdownTime = (h * 3600 + m * 60 + s) * 1000;
+            if (countdownTime <= 0) {
+                alert('Vui lòng nhập thời gian lớn hơn 0');
+                return;
+            }
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+            startCountdownBtn.disabled = true;
+            stopCountdownBtn.disabled = false;
+        };
+
+        stopCountdownBtn.onclick = () => {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            startCountdownBtn.disabled = false;
+            stopCountdownBtn.disabled = true;
+        };
+
+        resetCountdownBtn.onclick = () => {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            countdownHours.value = '';
+            countdownMinutes.value = '';
+            countdownSeconds.value = '';
+            countdownDisplay.textContent = '00:00:00';
+            startCountdownBtn.disabled = false;
+            stopCountdownBtn.disabled = true;
+        };
+
+        // ========== Alarm ==========
+        const alarmDisplay = document.getElementById('alarm-display');
+        const alarmTimeInput = document.getElementById('alarm-time-input');
+        const setAlarmBtn = document.getElementById('set-alarm');
+        const clearAlarmBtn = document.getElementById('clear-alarm');
+        const alarmStatus = document.getElementById('alarm-status');
+
+        let alarmTimeout = null;
+        let alarmTime = null;
+
+        function updateAlarmDisplay() {
+            if (alarmTime) {
+                alarmDisplay.textContent = alarmTime;
+            } else {
+                alarmDisplay.textContent = '--:--:--';
+            }
+        }
+
+        setAlarmBtn.onclick = () => {
+            const timeString = alarmTimeInput.value;
+            if (!timeString) {
+                alert('Vui lòng chọn thời gian');
+                return;
+            }
+            const now = new Date();
+            const [hours, minutes] = timeString.split(':').map(Number);
+            const alarmDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+            if (alarmDate <= now) {
+                alarmDate.setDate(alarmDate.getDate() + 1); // set for next day if time passed
+            }
+            alarmTime = timeString;
+            clearTimeout(alarmTimeout);
+            const diff = alarmDate.getTime() - now.getTime();
+            alarmTimeout = setTimeout(() => {
+                alarmDisplay.textContent = '🔔 ĐANG BẮT!';
+                alarmStatus.textContent = 'Báo thức đang ringing!';
+                // In real app, we would play sound; here just alert
+                alert('⏰ Báo thức! Đã đến thời gian đặt!');
+                alarmDisplay.textContent = timeString;
+                alarmStatus.textContent = '';
+            }, diff);
+            alarmStatus.textContent = `Báo thức đã được đặt cho ${timeString}`;
+            updateAlarmDisplay();
+        };
+
+        clearAlarmBtn.onclick = () => {
+            clearTimeout(alarmTimeout);
+            alarmTimeout = null;
+            alarmTime = null;
+            alarmDisplay.textContent = '--:--:--';
+            alarmStatus.textContent = '';
+        };
+
+        // ========== Dice Roller ==========
+        const diceResult = document.getElementById('dice-result');
+        const diceCountSelect = document.getElementById('dice-count');
+        const rollDiceBtn = document.getElementById('roll-dice');
+        const diceSum = document.getElementById('dice-sum');
+
+        const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+        rollDiceBtn.onclick = () => {
+            const count = parseInt(diceCountSelect.value);
+            const results = [];
+            let sum = 0;
+            for (let i = 0; i < count; i++) {
+                const face = Math.floor(Math.random() * 6);
+                results.push(diceFaces[face]);
+                sum += face + 1;
+            }
+            diceResult.textContent = results.join(' ');
+            diceSum.textContent = `Tổng: ${sum}`;
+        };
+
+        // ========== Wheel of Fortune ==========
+        const wheel = document.getElementById('wheel');
+        const spinWheelBtn = document.getElementById('spin-wheel');
+        const wheelResult = document.getElementById('wheel-result');
+
+        let wheelSpinCount = 0;
+
+        spinWheelBtn.onclick = () => {
+            wheelSpinCount++;
+            const spins = 5 + Math.floor(Math.random() * 5); // 5-9 full spins
+            const extraDeg = Math.floor(Math.random() * 360);
+            const totalDeg = spins * 360 + extraDeg;
+            wheel.style.transition = 'transform 4s ease-out';
+            wheel.style.transform = `rotate(${totalDeg}deg)`;
+            wheelResult.textContent = 'Đang quay...';
+            setTimeout(() => {
+                const segmentIndex = Math.floor((360 - (extraDeg % 360)) / 60); // 0-5
+                const segments = ['May mắn', 'Thành công', 'Hạnh phúc', 'Tài lộc', 'Sức khỏe', 'Yêu thương'];
+                const result = segments[segmentIndex];
+                wheelResult.textContent = `Bạn đã quay được: ${result}!`;
+                wheel.style.transition = 'none';
+            }, 4000);
+        };
+
+        // ========== Drawing Canvas ==========
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        const clearCanvasBtn = document.getElementById('clear-canvas');
+        const downloadCanvasBtn = document.getElementById('download-canvas');
+        const penColor = document.getElementById('pen-color');
+        const penWidth = document.getElementById('pen-width');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.strokeStyle = penColor.value;
+            ctx.lineWidth = penWidth.value;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        clearCanvasBtn.onclick = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        };
+
+        downloadCanvasBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.download = 'drawing.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        // ========== Simple Note ==========
+        const toolNote = document.getElementById('tool-note');
+        const clearNoteBtn = document.getElementById('clear-note');
+        const saveNoteBtn = document.getElementById('save-note');
+
+        const savedNote = localStorage.getItem('tool-note');
+        if (savedNote) {
+            toolNote.value = savedNote;
+        }
+
+        toolNote.addEventListener('input', () => {
+            localStorage.setItem('tool-note', toolNote.value);
+        });
+
+        clearNoteBtn.onclick = () => {
+            toolNote.value = '';
+            localStorage.removeItem('tool-note');
+        };
+
+        saveNoteBtn.onclick = () => {
+            alert('Ghi chú đã được lưu tự động!');
+        };
+    </script>
+</body>
+</html>

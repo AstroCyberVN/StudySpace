@@ -1,16 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="./assets/images/capybara.JPG">
-    <title>My dashboard space</title>
-
+    <title>ASTRO - Study Space</title>
     <link rel="stylesheet" href="./main.css">
     <script type="module" src="./javascript.js"></script>
 </head>
 <body>
-    <div id="navbar" style="height: 60px;"></div>
-    <div id="sidebar" style="min-height: calc(100vh - 60px);"></div>
+    <div id="navbar"></div>
+    <div id="sidebar"></div>
+    <main class="main-container">
+        <h1 class="section-title">🏠 Dashboard</h1>
+
+        <section style="margin-bottom: 32px;">
+            <h2 style="font-size: 1.1rem; color: var(--fg-secondary); margin-bottom: 16px;">Chào mừng trở lại, ASTRO! 👋</h2>
+            <div class="grid grid-4" id="stats-cards"></div>
+        </section>
+
+        <section style="margin-bottom: 32px;">
+            <h2 class="section-title">🚀 Truy cập nhanh</h2>
+            <div class="grid grid-auto" id="quick-access"></div>
+        </section>
+
+        <section>
+            <h2 class="section-title">📅 Lịch học hôm nay</h2>
+            <div id="today-schedule" class="card" style="min-height: 200px;">
+                <p style="color: var(--fg-secondary);">Đang tải...</p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { ROOT } from './javascript.js';
+
+        // Stats cards
+        const stats = [
+            { label: 'Ngày học liên tục', value: '0', icon: '🔥' },
+            { label: 'Tổng giờ học', value: '0h', icon: '⏱️' },
+            { label: 'Môn học', value: '0', icon: '📚' },
+            { label: 'Tasks hoàn thành', value: '0', icon: '✅' }
+        ];
+
+        const statsContainer = document.getElementById('stats-cards');
+        stats.forEach(s => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.textAlign = 'center';
+            card.innerHTML = `
+                <div style="font-size: 2.5rem; margin-bottom: 8px;">${s.icon}</div>
+                <div style="font-size: 2rem; font-weight: bold; color: var(--accent);" id="stat-${s.label}">${s.value}</div>
+                <div style="color: var(--fg-secondary); font-size: 0.85rem;">${s.label}</div>
+            `;
+            statsContainer.appendChild(card);
+        });
+
+        // Quick access cards
+        const quickAccess = [
+            { title: 'Study', desc: 'Thời khóa biểu, pomodoro, ghi chú', href: 'features/study/study.html', icon: '📚', color: '#3b82f6' },
+            { title: 'Tools', desc: 'Máy tính, timer, xúc xắc, vòng quay...', href: 'features/tools/tools.html', icon: '🔧', color: '#f59e0b' },
+            { title: 'Workspace', desc: 'Nghe nhạc, lướt web, ghi chú song song', href: 'features/workspace/workspace.html', icon: '🖥️', color: '#22c55e' },
+            { title: 'Settings', desc: 'Tùy chỉnh theme, dữ liệu, phím tắt', href: 'features/setting/setting.html', icon: '⚙️', color: '#a855f7' }
+        ];
+
+        const quickContainer = document.getElementById('quick-access');
+        quickAccess.forEach(q => {
+            const card = document.createElement('a');
+            card.href = ROOT + q.href;
+            card.className = 'card';
+            card.style.textDecoration = 'none';
+            card.style.color = 'inherit';
+            card.innerHTML = `
+                <div style="font-size: 2.5rem; margin-bottom: 12px;">${q.icon}</div>
+                <h3 style="font-size: 1.2rem; margin-bottom: 8px; color: ${q.color};">${q.title}</h3>
+                <p style="color: var(--fg-secondary); font-size: 0.9rem;">${q.desc}</p>
+            `;
+            quickContainer.appendChild(card);
+        });
+
+        // Load today's schedule from localStorage
+        function loadTodaySchedule() {
+            const timetable = JSON.parse(localStorage.getItem('study-timetable') || '{}');
+            const today = new Date().toLocaleDateString('vi-VN', { weekday: 'long' }).toLowerCase();
+            const todayKey = today.charAt(0).toUpperCase() + today.slice(1);
+            const todaySchedule = timetable[todayKey] || [];
+
+            const container = document.getElementById('today-schedule');
+            if (todaySchedule.length === 0) {
+                container.innerHTML = '<p style="color: var(--fg-secondary); text-align: center; padding: 40px;">Chưa có lịch học hôm nay. Vào trang <a href="' + ROOT + 'features/study/study.html" style="color: var(--accent);">Study</a> để thêm.</p>';
+                return;
+            }
+
+            container.innerHTML = todaySchedule.map(s => `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent);">
+                    <span style="font-weight: bold; color: var(--accent); min-width: 80px;">${s.time}</span>
+                    <span style="flex: 1;">${s.subject}</span>
+                    <span style="font-size: 0.8rem; color: var(--fg-secondary);">${s.room || ''}</span>
+                </div>
+            `).join('');
+        }
+
+        loadTodaySchedule();
+
+        // Load stats from localStorage
+        function loadStats() {
+            const data = JSON.parse(localStorage.getItem('study-stats') || '{}');
+            document.getElementById('stat-Ngày học liên tục').textContent = data.streak || '0';
+            document.getElementById('stat-Tổng giờ học').textContent = (data.totalHours || 0) + 'h';
+            document.getElementById('stat-Môn học').textContent = data.subjects || '0';
+            document.getElementById('stat-Tasks hoàn thành').textContent = data.tasksDone || '0';
+        }
+        loadStats();
+    </script>
 </body>
 </html>
