@@ -8,439 +8,192 @@
     <link rel="stylesheet" href="../../main.css">
     <script type="module" src="../../javascript.js"></script>
     <style>
-        .settings-grid {
-            display: grid;
-            gap: 24px;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        }
-        .settings-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-        }
-        .settings-card h2 {
-            margin-top: 0;
-            margin-bottom: 16px;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .setting-group {
-            margin-bottom: 20px;
-        }
-        .setting-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--fg-secondary);
-            font-size: 0.9rem;
-        }
-        .setting-group input,
-        .setting-group select,
-        .setting-group textarea {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--fg-primary);
-            font-family: inherit;
-        }
-        .setting-group input[type="checkbox"] {
-            width: auto;
-            margin-right: 8px;
-        }
-        .btn-block {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn-block .btn {
-            flex: 1;
-            min-width: 100px;
-        }
-        @media (max-width: 480px) {
-            .btn-block {
-                flex-direction: column;
-            }
-            .btn-block .btn {
-                min-width: unset;
-            }
-        }
-        .theme-preview {
-            height: 80px;
-            border-radius: 8px;
-            margin-top: 12px;
-            border: 2px solid var(--border);
+        .about-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--fg-primary);
-            font-weight: bold;
+            min-height: calc(100vh - var(--navbar-height) - 80px);
         }
-        .data-section {
-            background: var(--bg-tertiary);
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 16px;
-        }
-        .data-section h3 {
-            margin-top: 0;
-            margin-bottom: 12px;
-            color: var(--accent);
-        }
-        .data-section p {
-            color: var(--fg-secondary);
-            margin-bottom: 16px;
-            font-size: 0.9rem;
-        }
-        .about-section {
+
+        .about-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 48px 56px;
             text-align: center;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            animation: cardEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
-        .about-section img {
-            width: 100px;
-            height: 100px;
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .about-card::before {
+            content: '';
+            position: absolute;
+            top: -60px; left: 50%;
+            transform: translateX(-50%);
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(34,211,238,0.15) 0%, transparent 70%);
+            pointer-events: none;
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+            50%       { opacity: 1;   transform: translateX(-50%) scale(1.2); }
+        }
+
+        .avatar-ring {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 24px;
+            animation: avatarEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        @keyframes avatarEntrance {
+            from { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+            to   { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        .avatar-ring img {
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 16px;
-            border: 3px solid var(--accent);
+            display: block;
+            position: relative;
+            z-index: 1;
         }
-        .about-section h2 {
-            color: var(--accent);
-            margin-bottom: 12px;
+
+        .avatar-ring::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent), #3b82f6, #a855f7, var(--accent));
+            animation: ringRotate 3s linear infinite;
+            z-index: 0;
         }
-        .about-section p {
+
+        .avatar-ring::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            z-index: 0;
+        }
+
+        .avatar-ring img { z-index: 2; }
+
+        @keyframes ringRotate {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        .app-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--fg-primary);
+            margin-bottom: 8px;
+            animation: fadeUp 0.6s ease 0.35s both;
+        }
+
+        .app-tagline {
             color: var(--fg-secondary);
-            line-height: 1.6;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            animation: fadeUp 0.6s ease 0.45s both;
         }
-        .version-badge {
-            display: inline-block;
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s ease 0.55s both;
+        }
+
+        .badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-version {
             background: var(--accent);
             color: var(--bg-primary);
-            padding: 4px 12px;
-            border-radius: 12px;
+        }
+
+        .badge-edition {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--fg-secondary);
+        }
+
+        .author-line {
+            margin-top: 28px;
+            color: var(--fg-secondary);
             font-size: 0.85rem;
-            margin-top: 16px;
+            animation: fadeUp 0.6s ease 0.65s both;
+        }
+
+        .author-line strong {
+            color: var(--accent);
+        }
+
+        .divider {
+            width: 48px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            margin: 20px auto;
+            animation: fadeUp 0.6s ease 0.5s both;
         }
     </style>
 </head>
 <body>
-    <div id="navbar" style="height: 60px;"></div>
-    <div id="sidebar" style="min-height: calc(100vh - 60px);"></div>
+    <div id="navbar"></div>
+    <div id="sidebar"></div>
     <main class="main-container">
-        <h1 class="section-title">⚙️ Cài đặt</h1>
+        <div class="about-wrapper">
+            <div class="about-card">
+                <div class="avatar-ring">
+                    <img src="../../assets/images/capybara.JPG" alt="Capybara mascot">
+                </div>
 
-        <div class="settings-grid">
-            <!-- Theme Settings -->
-            <div class="settings-card">
-                <h2>🎨 Giao diện</h2>
-                <div class="setting-group">
-                    <label for="theme-select">Chọn theme</label>
-                    <select id="theme-select">
-                        <option value="dark">Tối (mặc định)</option>
-                        <option value="light">Sáng</option>
-                        <option value="custom">Tùy chỉnh</option>
-                    </select>
-                </div>
-                <div class="setting-group" id="custom-theme-controls" style="display: none;">
-                    <label>Màu nền chính</label>
-                    <input type="color" id="bg-primary" value="#030712">
-                    <label style="margin-top: 12px;">Màu nền副</label>
-                    <input type="color" id="bg-secondary" value="#0f172a">
-                    <label style="margin-top: 12px;">Màu nhấn</label>
-                    <input type="color" id="accent-color" value="#22d3ee">
-                </div>
-                <div class="theme-preview" id="theme-preview">
-                    Xem trước
-                </div>
-                <button class="btn btn-primary" id="apply-theme">Áp dụng theme</button>
-            </div>
+                <div class="app-name">Study Space</div>
 
-            <!-- Data Management -->
-            <div class="settings-card">
-                <h2>💾 Quản lý dữ liệu</h2>
-                <div class="data-section">
-                    <h3>Sao lưu & khôi phục</h3>
-                    <p>Xuất toàn bộ dữ liệu của Study Space thành file JSON để sao lưu hoặc chuyển thiết bị.</p>
-                    <div class="btn-block">
-                        <button class="btn btn-primary" id="export-data">Xuất dữ liệu</button>
-                        <button class="btn btn-secondary" id="import-data-input">Nhập dữ liệu</button>
-                        <input type="file" id="import-data" accept=".json" style="display: none;">
-                    </div>
-                </div>
-                <div class="data-section">
-                    <h3>Xóa dữ liệu</h3>
-                    <p>Xóa toàn bộ dữ liệu đã lưu (lịch học, ghi chú, cài đặt,...). Hành động này không thể khôi phục!</p>
-                    <div class="btn-block">
-                        <button class="btn btn-danger" id="clear-data">Xóa toàn bộ dữ liệu</button>
-                    </div>
-                </div>
-            </div>
+                <div class="divider"></div>
 
-            <!-- Keyboard Shortcuts -->
-            <div class="settings-card">
-                <h2>⌨️ Phím tắt</h2>
-                <div class="setting-group">
-                    <label>Phím tắt toàn cục</label>
-                </div>
-                <div class="setting-group">
-                    <div style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
-                        <div>
-                            <strong>Space</strong>: Bắt đầu/Tạm dừng Pomodoro hoặc Stopwatch
-                        </div>
-                        <div>
-                            <strong>Esc</strong>: Đóng modal hoặc popup
-                        </div>
-                        <div>
-                            <strong>Ctrl + S</strong>: Lưu ghi chú hiện tại (trong một số trang)
-                        </div>
-                        <div>
-                            <strong>Ctrl + Shift + D</strong>: Xóa dữ liệu (yêu cầu xác nhận)
-                        </div>
-                    </div>
-                </div>
-                <div class="setting-group">
-                    <label for="shortcut-custom">Tùy chỉnh phím tắt (phiên bản tới)</label>
-                    <input type="text" id="shortcut-custom" placeholder="Ví dụ: Ctrl+Alt+S" disabled>
-                    <small style="color: var(--fg-secondary);">Chức năng này sẽ được phát triển trong phiên bản sau.</small>
-                </div>
-            </div>
+                <p class="app-tagline">
+                    Không gian học tập cá nhân hóa — thời khóa biểu, Pomodoro,
+                    bộ công cụ học tập, và workspace linh hoạt trong một nơi.
+                </p>
 
-            <!-- About -->
-            <div class="settings-card about-section">
-                <h2>ℹ️ Về Study Space</h2>
-                <img src="../../assets/images/capybara.JPG" alt="Capybara mascot">
-                <h2>Study Space</h2>
-                <p>Một không gian học tập cá nhân hóa với các công cụ như thời khóa biểu, Pomodoro, máy tính, và không gian làm việc linh hoạt.</p>
-                <p>Phiên bản 1.0.0 • Desarrollado por ASTRO</p>
-                <div class="version-badge">Capybara Edition</div>
+                <div class="badge-row">
+                    <span class="badge badge-version">v1.0.0</span>
+                    <span class="badge badge-edition">🐾 Capybara Edition</span>
+                </div>
+
+                <div class="author-line">
+                    Phát triển bởi <strong>ASTRO</strong>
+                </div>
             </div>
         </div>
     </main>
-
-    <script type="module">
-        import { ROOT } from '../../javascript.js';
-
-        // ========== Theme Settings ==========
-        const themeSelect = document.getElementById('theme-select');
-        const customThemeControls = document.getElementById('custom-theme-controls');
-        const themePreview = document.getElementById('theme-preview');
-        const applyThemeBtn = document.getElementById('apply-theme');
-        const bgPrimaryInput = document.getElementById('bg-primary');
-        const bgSecondaryInput = document.getElementById('bg-secondary');
-        const accentColorInput = document.getElementById('accent-color');
-
-        // Load saved theme or use default
-        const savedTheme = localStorage.getItem('study-space-theme') || 'dark';
-        themeSelect.value = savedTheme;
-        updateThemeControls(savedTheme);
-        updateThemePreview();
-
-        themeSelect.addEventListener('change', (e) => {
-            updateThemeControls(e.target.value);
-        });
-
-        function updateThemeControls(theme) {
-            if (theme === 'custom') {
-                customThemeControls.style.display = 'block';
-            } else {
-                customThemeControls.style.display = 'none';
-            }
-            // Update preview immediately
-            updateThemePreview();
-        }
-
-        function updateThemePreview() {
-            let bgPrimary, bgSecondary, accent;
-            if (themeSelect.value === 'custom') {
-                bgPrimary = bgPrimaryInput.value;
-                bgSecondary = bgSecondaryInput.value;
-                accent = accentColorInput.value;
-            } else {
-                // Default themes
-                const themes = {
-                    dark: {
-                        bgPrimary: '#030712',
-                        bgSecondary: '#0f172a',
-                        accent: '#22d3ee'
-                    },
-                    light: {
-                        bgPrimary: '#ffffff',
-                        bgSecondary: '#f8fafc',
-                        accent: '#2563eb'
-                    }
-                };
-                const t = themes[themeSelect.value];
-                bgPrimary = t.bgPrimary;
-                bgSecondary = t.bgSecondary;
-                accent = t.accent;
-            }
-            // Set preview colors
-            themePreview.style.backgroundColor = bgPrimary;
-            themePreview.style.color = getContrastColor(bgPrimary);
-            themePreview.style.borderColor = accent;
-            themePreview.textContent = 'Xem trước';
-        }
-
-        function getContrastColor(hex) {
-            // Simple contrast: white for dark backgrounds, black for light
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            return brightness > 128 ? '#030712' : '#f8fafc';
-        }
-
-        // Update preview when color inputs change
-        [bgPrimaryInput, bgSecondaryInput, accentColorInput].forEach(input => {
-            input.addEventListener('input', updateThemePreview);
-        });
-
-        applyThemeBtn.addEventListener('click', () => {
-            let themeData;
-            if (themeSelect.value === 'custom') {
-                themeData = {
-                    theme: 'custom',
-                    bgPrimary: bgPrimaryInput.value,
-                    bgSecondary: bgSecondaryInput.value,
-                    accent: accentColorInput.value
-                };
-            } else {
-                themeData = { theme: themeSelect.value };
-            }
-            localStorage.setItem('study-space-theme', JSON.stringify(themeData));
-            // Apply theme immediately by updating CSS variables
-            applyTheme(themeData);
-            alert('Theme đã được áp dụng! Một số thay đổi có thể cần tải lại trang để thấy hoàn toàn.');
-        });
-
-        function applyTheme(data) {
-            // We'll update the :root variables
-            const root = document.documentElement;
-            if (data.theme === 'custom' || data.theme === savedTheme.split(':')[0] || data.theme === savedTheme) {
-                if (data.bgPrimary) root.style.setProperty('--bg-primary', data.bgPrimary);
-                if (data.bgSecondary) root.style.setProperty('--bg-secondary', data.bgSecondary);
-                if (data.accent) root.style.setProperty('--accent', data.accent);
-                // Also update accent-hover and other derived colors if needed
-                // For simplicity, we just update the base ones.
-            }
-        }
-
-        // Apply theme on load if saved
-        const savedThemeObj = localStorage.getItem('study-space-theme');
-        if (savedThemeObj) {
-            try {
-                const parsed = JSON.parse(savedThemeObj);
-                applyTheme(parsed);
-            } catch (e) {
-                console.error('Failed to parse theme', e);
-            }
-        }
-
-        // ========== Data Management ==========
-        const exportDataBtn = document.getElementById('export-data');
-        const importDataBtn = document.getElementById('import-data-input');
-        const importDataInput = document.getElementById('import-data');
-        const clearDataBtn = document.getElementById('clear-data');
-
-        exportDataBtn.addEventListener('click', () => {
-            const data = {
-                studyTimetable: localStorage.getItem('study-timetable'),
-                studyStats: localStorage.getItem('study-stats'),
-                pomodoroCycles: localStorage.getItem('pomodoro-cycles'),
-                studyNotes: Object.keys(localStorage).filter(key => key.startsWith('study-notes-')),
-                toolNote: localStorage.getItem('tool-note'),
-                workspaceNotes: localStorage.getItem('workspace-notes'),
-                theme: localStorage.getItem('study-space-theme')
-            };
-            const dataStr = JSON.stringify(data, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `study-space-backup-${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        });
-
-        importDataBtn.addEventListener('click', () => {
-            importDataInput.click();
-        });
-
-        importDataInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    // Clear relevant localStorage and set new data
-                    if (data.studyTimetable !== undefined) {
-                        localStorage.setItem('study-timetable', data.studyTimetable);
-                    }
-                    if (data.studyStats !== undefined) {
-                        localStorage.setItem('study-stats', data.studyStats);
-                    }
-                    if (data.pomodoroCycles !== undefined) {
-                        localStorage.setItem('pomodoro-cycles', data.pomodoroCycles);
-                    }
-                    if (data.studyNotes !== undefined) {
-                        // We'll just note that we don't automatically restore individual notes for simplicity
-                        // In a real app, we would iterate and set each one.
-                    }
-                    if (data.toolNote !== undefined) {
-                        localStorage.setItem('tool-note', data.toolNote);
-                    }
-                    if (data.workspaceNotes !== undefined) {
-                        localStorage.setItem('workspace-notes', data.workspaceNotes);
-                    }
-                    if (data.theme !== undefined) {
-                        localStorage.setItem('study-space-theme', data.theme);
-                        // Apply the theme
-                        applyTheme(typeof data.theme === 'string' ? JSON.parse(data.theme) : data.theme);
-                    }
-                    alert('Dữ liệu đã được nhập thành công! Vui lòng tải lại trang để áp dụng tất cả thay đổi.');
-                    // Optionally, reload the page
-                    // location.reload();
-                } catch (err) {
-                    alert('Dữ liệu không hợp lệ hoặc bị lỗi: ' + err.message);
-                }
-            };
-            reader.onerror = () => {
-                alert('Không thể đọc file');
-            };
-            reader.readAsText(file);
-        });
-
-        clearDataBtn.addEventListener('click', () => {
-            if (!confirm('CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ dữ liệu đã lưu (lịch học, ghi chú, cài đặt,...) và không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?')) {
-                return;
-            }
-            // List of keys to clear (we'll clear all study-space related keys)
-            const keysToClear = [
-                'study-timetable',
-                'study-stats',
-                'pomodoro-cycles',
-                'tool-note',
-                'workspace-notes',
-                'study-space-theme'
-            ];
-            // Also clear any study-notes-*
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('study-notes-')) {
-                    keysToClear.push(key);
-                }
-            });
-            keysToClear.forEach(key => {
-                localStorage.removeItem(key);
-            });
-            // Reset theme to default
-            localStorage.removeItem('study-space-theme');
-            // Reload page to reset UI
-            alert('Đã xóa toàn bộ dữ liệu. Trang sẽ được tải lại...');
-            location.reload();
-        });
-    </script>
 </body>
 </html>

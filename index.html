@@ -14,19 +14,19 @@
     <main class="main-container">
         <h1 class="section-title">🏠 Dashboard</h1>
 
-        <section style="margin-bottom: 32px;">
+        <section style="margin-bottom: 32px;" class="animate-fade-in">
             <h2 style="font-size: 1.1rem; color: var(--fg-secondary); margin-bottom: 16px;">Chào mừng trở lại, ASTRO! 👋</h2>
             <div class="grid grid-4" id="stats-cards"></div>
         </section>
 
-        <section style="margin-bottom: 32px;">
+        <section style="margin-bottom: 32px;" class="animate-fade-in">
             <h2 class="section-title">🚀 Truy cập nhanh</h2>
             <div class="grid grid-auto" id="quick-access"></div>
         </section>
 
-        <section>
+        <section class="animate-fade-in">
             <h2 class="section-title">📅 Lịch học hôm nay</h2>
-            <div id="today-schedule" class="card" style="min-height: 200px;">
+            <div id="today-schedule" class="card card-animated" style="min-height: 200px;">
                 <p style="color: var(--fg-secondary);">Đang tải...</p>
             </div>
         </section>
@@ -46,7 +46,7 @@
         const statsContainer = document.getElementById('stats-cards');
         stats.forEach(s => {
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = 'card card-animated';
             card.style.textAlign = 'center';
             card.innerHTML = `
                 <div style="font-size: 2.5rem; margin-bottom: 8px;">${s.icon}</div>
@@ -68,7 +68,7 @@
         quickAccess.forEach(q => {
             const card = document.createElement('a');
             card.href = ROOT + q.href;
-            card.className = 'card';
+            card.className = 'card card-animated';
             card.style.textDecoration = 'none';
             card.style.color = 'inherit';
             card.innerHTML = `
@@ -82,8 +82,9 @@
         // Load today's schedule from localStorage
         function loadTodaySchedule() {
             const timetable = JSON.parse(localStorage.getItem('study-timetable') || '{}');
-            const today = new Date().toLocaleDateString('vi-VN', { weekday: 'long' }).toLowerCase();
-            const todayKey = today.charAt(0).toUpperCase() + today.slice(1);
+            const dayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+            const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
+            const todayKey = DAYS[dayIndex];
             const todaySchedule = timetable[todayKey] || [];
 
             const container = document.getElementById('today-schedule');
@@ -112,6 +113,16 @@
             document.getElementById('stat-Tasks hoàn thành').textContent = data.tasksDone || '0';
         }
         loadStats();
+
+        // Listen for changes in localStorage (e.g., from other tabs)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'study-timetable') {
+                loadTodaySchedule();
+            }
+            if (e.key === 'study-stats' || e.key === 'study-timetable') {
+                loadStats();
+            }
+        });
     </script>
 </body>
 </html>

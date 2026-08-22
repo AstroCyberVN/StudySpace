@@ -1,7 +1,7 @@
 // Root of the site, resolved from this module's own location.
 // Works whether hosted at "/" (localhost live server) or under a
 // sub-path like "/StudySpace/" (GitHub Pages).
-const ROOT = new URL('.', import.meta.url).href;
+export const ROOT = new URL('.', import.meta.url).href;
 
 async function loadComponent(url, placeholderId) {
     const result = await fetch(url);

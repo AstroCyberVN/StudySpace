@@ -101,13 +101,6 @@
             padding-top: 40px;
             box-sizing: border-box;
         }
-        .alarm-time {
-            font-size: 2rem;
-            text-align: center;
-            margin: 16px 0;
-            font-family: 'Minecraft', monospace;
-            letter-spacing: 2px;
-        }
         .timer-display {
             font-size: 4rem;
             text-align: center;
@@ -131,74 +124,87 @@
     </style>
 </head>
 <body>
-    <div id="navbar" style="height: 60px;"></div>
-    <div id="sidebar" style="min-height: calc(100vh - 60px);"></div>
+    <div id="navbar"></div>
+    <div id="sidebar"></div>
     <main class="main-container">
         <h1 class="section-title">🔧 Tools - Bộ công cụ học tập</h1>
 
-        <div class="tool-content tool-grid-2">
+        <div class="tool-content tool-grid-2 animate-fade-in">
             <!-- Scientific Calculator -->
-            <div class="tool-card">
+            <div class="tool-card card-animated">
                 <div class="tool-title">🧮 Máy tính Casio</div>
                 <div id="calculator">
-                    <input type="text" id="calc-display" class="input" readonly style="font-size: 1.5rem; text-align: right; margin-bottom: 12px; height: 48px;" value="0">
-                    <div class="grid grid-4" id="calc-buttons"></div>
+                    <input type="text" id="calc-display" class="input" readonly style="font-size: 1.8rem; text-align: right; margin-bottom: 15px; height: 55px;" value="0">
+                    <div class="grid grid-4" id="calc-buttons">
+                        <button class="btn btn-secondary" data-calc="clear">C</button>
+                        <button class="btn btn-secondary" data-calc="delete">←</button>
+                        <button class="btn btn-secondary" data-calc="%">%</button>
+                        <button class="btn btn-secondary" data-calc="/">÷</button>
+
+                        <button class="btn btn-secondary" data-calc="7">7</button>
+                        <button class="btn btn-secondary" data-calc="8">8</button>
+                        <button class="btn btn-secondary" data-calc="9">9</button>
+                        <button class="btn btn-secondary" data-calc="*">×</button>
+
+                        <button class="btn btn-secondary" data-calc="4">4</button>
+                        <button class="btn btn-secondary" data-calc="5">5</button>
+                        <button class="btn btn-secondary" data-calc="6">6</button>
+                        <button class="btn btn-secondary" data-calc="-">−</button>
+
+                        <button class="btn btn-secondary" data-calc="1">1</button>
+                        <button class="btn btn-secondary" data-calc="2">2</button>
+                        <button class="btn btn-secondary" data-calc="3">3</button>
+                        <button class="btn btn-secondary" data-calc="+">+</button>
+
+                        <button class="btn btn-secondary" data-calc="0">0</button>
+                        <button class="btn btn-secondary" data-calc=".">.</button>
+                        <button class="btn btn-secondary" data-calc="±">±</button>
+                        <button class="btn btn-primary" data-calc="=">=</button>
+                    </div>
                 </div>
             </div>
 
             <!-- Timer / Stopwatch -->
-            <div class="tool-card">
+            <div class="tool-card card-animated">
                 <div class="tool-title">⏱️ Đồng hồ đo thời gian</div>
-                <div class="timer-display" id="stopwatch-display">00:00:00</div>
-                <div class="controls">
+                <div class="timer-display" id="stopwatch-display">00:00:00.00</div>
+                <div class="controls" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 15px;">
                     <button class="btn btn-primary" id="start-stopwatch">Bắt đầu</button>
                     <button class="btn btn-secondary" id="stop-stopwatch" disabled>Dừng</button>
                     <button class="btn btn-secondary" id="reset-stopwatch">Reset</button>
+                    <button class="btn btn-small" id="lap-stopwatch">Lap</button>
                 </div>
-                <small style="color: var(--fg-secondary);">Đánh dấu lap: <button class="btn btn-small" id="lap-stopwatch">Lap</button></small>
-                <div id="laps" style="margin-top: 12px; max-height: 150px; overflow-y: auto; font-size: 0.9rem;"></div>
+                <div id="laps" style="margin-top: 15px; max-height: 180px; overflow-y: auto; font-size: 0.9rem; border-top: 1px solid var(--border); padding-top: 10px;"></div>
             </div>
         </div>
 
-        <div class="tool-content tool-grid-2">
+        <div class="tool-content tool-grid-2 animate-fade-in">
             <!-- Countdown Timer -->
-            <div class="tool-card">
+            <div class="tool-card card-animated">
                 <div class="tool-title">⏳ Đếm ngược</div>
                 <div class="countdown-display" id="countdown-display">00:00:00</div>
-                <div style="margin-bottom: 16px;">
-                    <input type="number" id="countdown-hours" class="input-small" placeholder="giờ" min="0">
-                    <input type="number" id="countdown-minutes" class="input-small" placeholder="phút" min="0">
-                    <input type="number" id="countdown-seconds" class="input-small" placeholder="giây" min="0">
+                <div style="margin-bottom: 18px;">
+                    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                        <input type="number" id="countdown-hours" class="input-small" placeholder="giờ" min="0" style="width: 80px;">
+                        <input type="number" id="countdown-minutes" class="input-small" placeholder="phút" min="0" style="width: 80px;">
+                        <input type="number" id="countdown-seconds" class="input-small" placeholder="giây" min="0" style="width: 80px;">
+                    </div>
                 </div>
-                <div class="controls">
+                <div class="controls" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
                     <button class="btn btn-primary" id="start-countdown">Bắt đầu</button>
                     <button class="btn btn-secondary" id="stop-countdown" disabled>Dừng</button>
                     <button class="btn btn-secondary" id="reset-countdown">Reset</button>
                 </div>
             </div>
-
-            <!-- Alarm Clock -->
-            <div class="tool-card">
-                <div class="tool-title">⏰ Đặt báo thức</div>
-                <div class="alarm-time" id="alarm-display">--:--:--</div>
-                <div style="margin-bottom: 16px;">
-                    <input type="time" id="alarm-time-input" class="input" style="width: 200px;">
-                </div>
-                <div class="controls">
-                    <button class="btn btn-primary" id="set-alarm">Đặt báo thức</button>
-                    <button class="btn btn-secondary" id="clear-alarm">Hủy báo thức</button>
-                </div>
-                <div id="alarm-status" style="margin-top: 12px; color: var(--fg-secondary); font-size: 0.9rem;"></div>
-            </div>
         </div>
 
-        <div class="tool-content tool-grid-2">
+        <div class="tool-content tool-grid-2 animate-fade-in">
             <!-- Dice Roller (1-5 dice) -->
-            <div class="tool-card">
+            <div class="tool-card card-animated">
                 <div class="tool-title">🎲 Xúc xắc (1-5)</div>
-                <div style="margin-bottom: 16px;">
-                    <label for="dice-count" style="color: var(--fg-secondary);">Số xúc xắc:</label>
-                    <select id="dice-count" class="input" style="width: 80px;">
+                <div style="margin-bottom: 18px;">
+                    <label for="dice-count" style="color: var(--fg-secondary); display: block; margin-bottom: 8px;">Số xúc xắc:</label>
+                    <select id="dice-count" class="input" style="width: 100%; padding: 10px;">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -207,16 +213,16 @@
                     </select>
                 </div>
                 <div class="dice" id="dice-result">⚀</div>
-                <div class="controls">
+                <div class="controls" style="margin-top: 15px;">
                     <button class="btn btn-primary" id="roll-dice">Lăn xúc xắc</button>
                 </div>
-                <div style="margin-top: 12px; color: var(--fg-secondary); font-size: 0.9rem;" id="dice-sum"></div>
+                <div style="margin-top: 12px; color: var(--fg-secondary); font-size: 0.9rem; text-align: center;" id="dice-sum"></div>
             </div>
 
             <!-- Wheel of Fortune -->
-            <div class="tool-card">
+            <div class="tool-card card-animated">
                 <div class="tool-title">🎡 Vòng quay may mắn</div>
-                <div class="wheel" id="wheel">
+                <div class="wheel" id="wheel" style="width: 220px; height: 220px;">
                     <div class="wheel-segment" style="transform: rotate(0deg);"><div>May mắn</div></div>
                     <div class="wheel-segment" style="transform: rotate(60deg);"><div>Thành công</div></div>
                     <div class="wheel-segment" style="transform: rotate(120deg);"><div>Hạnh phúc</div></div>
@@ -227,35 +233,42 @@
                 <div class="controls" style="margin-top: 20px;">
                     <button class="btn btn-primary" id="spin-wheel">Quay vòng</button>
                 </div>
-                <div id="wheel-result" style="margin-top: 16px; text-align: center; font-size: 1.2rem; color: var(--accent); min-height: 40px;"></div>
+                <div id="wheel-result" style="margin-top: 18px; text-align: center; font-size: 1.1rem; color: var(--accent); min-height: 40px;"></div>
             </div>
         </div>
 
-        <div class="tool-content tool-grid-2">
+        <div class="tool-content tool-grid-2 animate-fade-in">
             <!-- Drawing Canvas -->
-            <div class="tool-card">
+            <div class="tool-card card-animated">
                 <div class="tool-title">🎨 Bảng vẽ</div>
-                <div class="canvas-border" id="drawing-canvas" width="500" height="300"></div>
-                <div class="controls" style="margin-top: 12px;">
+                <canvas class="canvas-border" id="drawing-canvas" width="500" height="300"></canvas>
+                <div class="controls" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
                     <button class="btn btn-secondary" id="clear-canvas">Xóa bảng</button>
                     <button class="btn btn-secondary" id="download-canvas">Tải ảnh</button>
-                    <div style="margin-left: auto;">
-                        <label style="color: var(--fg-secondary); margin-right: 8px;">Màu:</label>
-                        <input type="color" id="pen-color" value="#22d3ee" style="width: 40px; height: 32px; border: none; border-radius: 4px;">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <label style="color: var(--fg-secondary); margin-right: 6px;">Màu:</label>
+                        <input type="color" id="pen-color" value="#22d3ee" style="width: 38px; height: 32px; border: none; border-radius: 4px;">
                         <label style="color: var(--fg-secondary); margin: 0 8px;">Độ dày:</label>
                         <input type="range" id="pen-width" min="1" max="10" value="2" style="width: 80px;">
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Simple Note Widget (optional) -->
-            <div class="tool-card">
-                <div class="tool-title">📝 Ghi chú nhanh</div>
-                <textarea id="tool-note" class="input" rows="8" placeholder="Ghi chú tạm thời..."></textarea>
-                <div class="controls" style="margin-top: 12px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" id="clear-note">Xóa</button>
-                    <button class="btn btn-primary" id="save-note">Lưu</button>
-                </div>
+        <!-- Pomodoro Timer -->
+        <div class="tool-card animate-fade-in" style="margin-top: 20px;">
+            <div class="tool-title">🍅 Pomodoro Timer</div>
+            <div class="pomodoro-mode" style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;">
+                <button class="btn btn-primary pomodoro-mode-btn active" data-mode="pomodoro">Pomodoro</button>
+                <button class="btn btn-secondary pomodoro-mode-btn" data-mode="short">Short Break</button>
+                <button class="btn btn-secondary pomodoro-mode-btn" data-mode="long">Long Break</button>
+            </div>
+            <div id="pomodoro-time" style="font-size: 4rem; font-weight: bold; color: var(--accent); text-align: center; font-family: 'Minecraft', monospace;">25:00</div>
+            <div style="text-align: center; color: var(--fg-secondary); margin-bottom: 12px;">Hoàn thành: <span id="pomodoro-cycles">0</span> rounds</div>
+            <div class="controls" style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn btn-primary" id="pomodoro-start">Bắt đầu</button>
+                <button class="btn btn-secondary" id="pomodoro-pause" disabled>Tạm dừng</button>
+                <button class="btn btn-secondary" id="pomodoro-reset">Đặt lại</button>
             </div>
         </div>
     </main>
@@ -265,72 +278,85 @@
 
         // ========== Calculator ==========
         const calcDisplay = document.getElementById('calc-display');
-        const calcButtons = document.getElementById('calc-buttons');
-
-        const buttons = [
-            ['C', '(', ')', '/'],
-            ['7', '8', '9', '*'],
-            ['4', '5', '6', '-'],
-            ['1', '2', '3', '+'],
-            ['0', '.', '%', '=']
-        ];
-
-        buttons.forEach(row => {
-            row.forEach(btnText => {
-                const btn = document.createElement('button');
-                btn.textContent = btnText;
-                btn.className = 'btn btn-secondary';
-                btn.style.flex = '1';
-                btn.onclick = () => handleCalc(btnText);
-                calcButtons.appendChild(btn);
-            });
-        });
 
         let calcCurrent = '0';
         let calcOperator = null;
         let calcPrev = null;
 
-        function handleCalc(value) {
-            if (value === 'C') {
+        function clearCalc() {
+            calcCurrent = '0';
+            calcOperator = null;
+            calcPrev = null;
+            calcDisplay.textContent = calcCurrent;
+        }
+
+        function deleteCalc() {
+            if (calcCurrent.length === 1 || calcCurrent === 'Error') {
                 calcCurrent = '0';
-                calcOperator = null;
-                calcPrev = null;
-            } else if (value === '=') {
-                if (calcOperator && calcPrev !== null) {
-                    const prev = parseFloat(calcPrev);
-                    const current = parseFloat(calcCurrent);
-                    if (isNaN(prev) || isNaN(current)) {
-                        calcCurrent = 'Error';
-                    } else {
-                        let result;
-                        switch (calcOperator) {
-                            case '+': result = prev + current; break;
-                            case '-': result = prev - current; break;
-                            case '*': result = prev * current; break;
-                            case '/': result = current !== 0 ? prev / current : 'Error'; break;
-                            case '%': result = prev % current; break;
-                            default: result = current;
-                        }
-                        calcCurrent = result.toString();
-                        calcOperator = null;
-                        calcPrev = null;
-                    }
-                }
-            } else if (['+', '-', '*', '/', '%'].includes(value)) {
-                if (calcCurrent !== '0' && calcCurrent !== 'Error') {
-                    calcPrev = calcCurrent;
-                    calcOperator = value;
-                    calcCurrent = '0';
-                }
             } else {
-                if (calcCurrent === '0' || calcCurrent === 'Error') {
-                    calcCurrent = value;
-                } else {
-                    calcCurrent += value;
-                }
+                calcCurrent = calcCurrent.slice(0, -1);
             }
             calcDisplay.textContent = calcCurrent;
         }
+
+        function appendToCalc(value) {
+            if (calcCurrent === '0' || calcCurrent === 'Error') {
+                calcCurrent = value;
+            } else {
+                calcCurrent += value;
+            }
+            calcDisplay.textContent = calcCurrent;
+        }
+
+        function toggleSign() {
+            if (calcCurrent !== '0' && calcCurrent !== 'Error') {
+                calcCurrent = calcCurrent.startsWith('-') ? calcCurrent.slice(1) : '-' + calcCurrent;
+                calcDisplay.textContent = calcCurrent;
+            }
+        }
+
+        function calculateResult() {
+            if (calcOperator && calcPrev !== null) {
+                const prev = parseFloat(calcPrev);
+                const current = parseFloat(calcCurrent);
+                if (isNaN(prev) || isNaN(current)) {
+                    calcCurrent = 'Error';
+                } else {
+                    let result;
+                    switch (calcOperator) {
+                        case '+': result = prev + current; break;
+                        case '-': result = prev - current; break;
+                        case '*': result = prev * current; break;
+                        case '/': result = current !== 0 ? prev / current : 'Error'; break;
+                        case '%': result = prev % current; break;
+                        default: result = current;
+                    }
+                    calcCurrent = result.toString();
+                    calcOperator = null;
+                    calcPrev = null;
+                }
+                calcDisplay.textContent = calcCurrent;
+            }
+        }
+
+        // Calculator event delegation
+        document.getElementById('calc-buttons').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-calc]');
+            if (!btn) return;
+            const val = btn.dataset.calc;
+            if (val === 'clear') { clearCalc(); }
+            else if (val === 'delete') { deleteCalc(); }
+            else if (val === '±') { toggleSign(); }
+            else if (val === '=') { calculateResult(); }
+            else if (['+', '-', '*', '/', '%'].includes(val)) {
+                if (calcOperator && calcPrev !== null) calculateResult();
+                calcPrev = calcCurrent;
+                calcOperator = val;
+                calcCurrent = '0';
+            } else {
+                appendToCalc(val);
+            }
+        });
 
         // ========== Stopwatch ==========
         const stopwatchDisplay = document.getElementById('stopwatch-display');
@@ -458,58 +484,6 @@
             stopCountdownBtn.disabled = true;
         };
 
-        // ========== Alarm ==========
-        const alarmDisplay = document.getElementById('alarm-display');
-        const alarmTimeInput = document.getElementById('alarm-time-input');
-        const setAlarmBtn = document.getElementById('set-alarm');
-        const clearAlarmBtn = document.getElementById('clear-alarm');
-        const alarmStatus = document.getElementById('alarm-status');
-
-        let alarmTimeout = null;
-        let alarmTime = null;
-
-        function updateAlarmDisplay() {
-            if (alarmTime) {
-                alarmDisplay.textContent = alarmTime;
-            } else {
-                alarmDisplay.textContent = '--:--:--';
-            }
-        }
-
-        setAlarmBtn.onclick = () => {
-            const timeString = alarmTimeInput.value;
-            if (!timeString) {
-                alert('Vui lòng chọn thời gian');
-                return;
-            }
-            const now = new Date();
-            const [hours, minutes] = timeString.split(':').map(Number);
-            const alarmDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
-            if (alarmDate <= now) {
-                alarmDate.setDate(alarmDate.getDate() + 1); // set for next day if time passed
-            }
-            alarmTime = timeString;
-            clearTimeout(alarmTimeout);
-            const diff = alarmDate.getTime() - now.getTime();
-            alarmTimeout = setTimeout(() => {
-                alarmDisplay.textContent = '🔔 ĐANG BẮT!';
-                alarmStatus.textContent = 'Báo thức đang ringing!';
-                // In real app, we would play sound; here just alert
-                alert('⏰ Báo thức! Đã đến thời gian đặt!');
-                alarmDisplay.textContent = timeString;
-                alarmStatus.textContent = '';
-            }, diff);
-            alarmStatus.textContent = `Báo thức đã được đặt cho ${timeString}`;
-            updateAlarmDisplay();
-        };
-
-        clearAlarmBtn.onclick = () => {
-            clearTimeout(alarmTimeout);
-            alarmTimeout = null;
-            alarmTime = null;
-            alarmDisplay.textContent = '--:--:--';
-            alarmStatus.textContent = '';
-        };
 
         // ========== Dice Roller ==========
         const diceResult = document.getElementById('dice-result');
@@ -605,28 +579,78 @@
             link.click();
         };
 
-        // ========== Simple Note ==========
-        const toolNote = document.getElementById('tool-note');
-        const clearNoteBtn = document.getElementById('clear-note');
-        const saveNoteBtn = document.getElementById('save-note');
+        // ========== Pomodoro Timer ==========
+        const POMODORO_TIMES = { pomodoro: 25 * 60, short: 5 * 60, long: 15 * 60 };
+        let pomodoroMode = 'pomodoro';
+        let pomodoroTimeLeft = POMODORO_TIMES.pomodoro;
+        let pomodoroInterval = null;
+        let pomodoroCycles = parseInt(localStorage.getItem('pomodoro-cycles') || '0');
 
-        const savedNote = localStorage.getItem('tool-note');
-        if (savedNote) {
-            toolNote.value = savedNote;
+        const pomodoroTimeDisplay = document.getElementById('pomodoro-time');
+        const pomodoroCyclesDisplay = document.getElementById('pomodoro-cycles');
+
+        function updatePomodoroDisplay() {
+            const m = Math.floor(pomodoroTimeLeft / 60).toString().padStart(2, '0');
+            const s = (pomodoroTimeLeft % 60).toString().padStart(2, '0');
+            pomodoroTimeDisplay.textContent = `${m}:${s}`;
         }
+        pomodoroCyclesDisplay.textContent = pomodoroCycles;
+        updatePomodoroDisplay();
 
-        toolNote.addEventListener('input', () => {
-            localStorage.setItem('tool-note', toolNote.value);
+        document.querySelectorAll('.pomodoro-mode-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.pomodoro-mode-btn').forEach(b => {
+                    b.classList.remove('active', 'btn-primary');
+                    b.classList.add('btn-secondary');
+                });
+                btn.classList.add('active', 'btn-primary');
+                btn.classList.remove('btn-secondary');
+                pomodoroMode = btn.dataset.mode;
+                pomodoroTimeLeft = POMODORO_TIMES[pomodoroMode];
+                updatePomodoroDisplay();
+                resetPomodoro();
+            };
         });
 
-        clearNoteBtn.onclick = () => {
-            toolNote.value = '';
-            localStorage.removeItem('tool-note');
-        };
+        function startPomodoro() {
+            if (pomodoroInterval) return;
+            document.getElementById('pomodoro-start').disabled = true;
+            document.getElementById('pomodoro-pause').disabled = false;
+            pomodoroInterval = setInterval(() => {
+                pomodoroTimeLeft--;
+                updatePomodoroDisplay();
+                if (pomodoroTimeLeft <= 0) {
+                    clearInterval(pomodoroInterval);
+                    pomodoroInterval = null;
+                    if (pomodoroMode === 'pomodoro') {
+                        pomodoroCycles++;
+                        pomodoroCyclesDisplay.textContent = pomodoroCycles;
+                        localStorage.setItem('pomodoro-cycles', pomodoroCycles.toString());
+                        alert('🎉 Pomodoro hoàn thành! Nghỉ ngơi nào.');
+                    } else {
+                        alert('⏰ Hết giờ nghỉ!');
+                    }
+                    resetPomodoro();
+                }
+            }, 1000);
+        }
 
-        saveNoteBtn.onclick = () => {
-            alert('Ghi chú đã được lưu tự động!');
-        };
+        function pausePomodoro() {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+            document.getElementById('pomodoro-start').disabled = false;
+            document.getElementById('pomodoro-pause').disabled = true;
+        }
+
+        function resetPomodoro() {
+            pausePomodoro();
+            pomodoroTimeLeft = POMODORO_TIMES[pomodoroMode];
+            updatePomodoroDisplay();
+        }
+
+        document.getElementById('pomodoro-start').onclick = startPomodoro;
+        document.getElementById('pomodoro-pause').onclick = pausePomodoro;
+        document.getElementById('pomodoro-reset').onclick = resetPomodoro;
     </script>
 </body>
 </html>

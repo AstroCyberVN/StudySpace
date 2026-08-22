@@ -4,320 +4,479 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../../assets/images/capybara.JPG">
-    <title>Workspace - Notebook & Web</title>
+    <title>Workspace - Study Space</title>
     <link rel="stylesheet" href="../../main.css">
     <script type="module" src="../../javascript.js"></script>
     <style>
-        .split-container {
-            display: flex;
-            height: calc(100vh - var(--navbar-height));
-            margin-top: var(--navbar-height);
+        /* ── Grid layout ── */
+        .ws-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+            padding: 4px 0;
         }
-        .split-pane {
-            flex: 1;
+
+        /* ── Each YouTube tile ── */
+        .yt-tile {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            animation: tileIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            position: relative;
         }
-        .split-pane:nth-child(1) {
-            border-right: 2px solid var(--border);
+
+        .yt-tile:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(0,0,0,0.4);
         }
-        .split-pane-header {
-            padding: 12px 16px;
+
+        .yt-tile.dragging {
+            opacity: 0.4;
+            border-color: var(--accent);
+        }
+
+        .yt-tile.drag-over {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent), 0 0 24px rgba(34,211,238,0.3);
+        }
+
+        @keyframes tileIn {
+            from { opacity: 0; transform: scale(0.9) translateY(12px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* ── Tile header (dynamic island style) ── */
+        .tile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
             background: var(--bg-tertiary);
             border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
+            cursor: grab;
+            user-select: none;
         }
-        .split-pane-header h2 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--accent);
-        }
-        .split-pane-content {
+
+        .tile-header:active { cursor: grabbing; }
+
+        .tile-title {
+            font-size: 0.82rem;
+            color: var(--fg-secondary);
+            font-weight: 500;
             flex: 1;
-            overflow: auto;
-            padding: 16px;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+
+        /* Dynamic island pill */
+        .tile-island {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .island-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: islandPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes islandPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.7); }
+        }
+
+        .tile-menu-btn {
+            background: none;
+            border: none;
+            color: var(--fg-secondary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            line-height: 1;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .tile-menu-btn:hover {
+            background: var(--bg-primary);
+            color: var(--fg-primary);
+        }
+
+        /* ── Popover menu ── */
+        .tile-popover {
+            position: absolute;
+            top: 42px;
+            right: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px;
+            z-index: 200;
+            min-width: 180px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            display: none;
+            animation: popoverIn 0.15s ease both;
+        }
+
+        .tile-popover.open { display: block; }
+
+        @keyframes popoverIn {
+            from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .popover-input {
+            width: 100%;
+            padding: 8px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--fg-primary);
+            font-family: inherit;
+            font-size: 0.82rem;
+            margin-bottom: 6px;
+        }
+
+        .popover-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .popover-btn {
+            width: 100%;
+            padding: 7px 10px;
+            background: var(--accent);
+            border: none;
+            border-radius: 7px;
+            color: var(--bg-primary);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: background 0.15s;
+        }
+
+        .popover-btn:hover { background: var(--accent-hover); }
+
+        .popover-btn-danger {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--danger);
+            margin-bottom: 0;
+        }
+
+        .popover-btn-danger:hover { background: rgba(239,68,68,0.1); border-color: var(--danger); }
+
+        /* ── iframe embed ── */
+        .tile-embed {
+            flex: 1;
+            min-height: 220px;
+            position: relative;
             background: var(--bg-primary);
         }
-        .split-pane-content iframe {
+
+        .tile-embed iframe {
             width: 100%;
             height: 100%;
             border: none;
-        }
-        .audio-player {
-            width: 100%;
-            margin-top: 16px;
-        }
-        .notes-editor {
-            width: 100%;
-            height: 100%;
-            min-height: 200px;
-            font-family: inherit;
-            resize: none;
-        }
-        .splitter {
-            background: var(--border);
-            width: 4px;
-            cursor: col-resize;
-            user-select: none;
-            z-index: 10;
-        }
-        .splitter:hover {
-            background: var(--accent);
-        }
-        .tab-container {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .tab-btn {
-            padding: 6px 12px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--fg-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            background: var(--accent);
-            color: var(--bg-primary);
-            border-color: var(--accent);
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
             display: block;
         }
-        .control-group {
+
+        .tile-placeholder {
+            position: absolute;
+            inset: 0;
             display: flex;
-            gap: 12px;
+            flex-direction: column;
             align-items: center;
-        }
-        .control-group label {
+            justify-content: center;
+            gap: 10px;
             color: var(--fg-secondary);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+        }
+
+        .tile-placeholder .icon {
+            font-size: 2.4rem;
+            opacity: 0.4;
+        }
+
+        /* ── Add button tile ── */
+        .yt-tile-add {
+            background: transparent;
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--fg-secondary);
+            font-size: 0.9rem;
+            gap: 10px;
+            transition: all 0.2s;
+            animation: tileIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+
+        .yt-tile-add:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(34,211,238,0.05);
+        }
+
+        .yt-tile-add .plus { font-size: 1.6rem; }
+
+        /* ── Toolbar ── */
+        .ws-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .ws-toolbar h1 { margin-bottom: 0; }
+
+        .toolbar-hint {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: var(--fg-secondary);
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
-    <div id="navbar" style="height: 60px;"></div>
-    <div id="sidebar" style="min-height: calc(100vh - 60px);"></div>
-    <div class="split-container">
-        <!-- Left Pane: Webview & Audio -->
-        <div class="split-pane">
-            <div class="split-pane-header">
-                <h2>🌐 Webview & Audio</h2>
-                <div class="tab-container">
-                    <button class="tab-btn active" data-tab="web">Web</button>
-                    <button class="tab-btn" data-tab="audio">Âm nhạc</button>
-                </div>
-            </div>
-            <div class="split-pane-content">
-                <div id="web-tab" class="tab-content active">
-                    <input type="text" id="url-input" class="input" placeholder="Nhập URL trang web (ví dụ: https://www.youtube.com)" style="width: 100%; margin-bottom: 12px;">
-                    <button class="btn btn-primary" id="load-web">Tải trang</button>
-                    <iframe id="webview" src="about:blank"></iframe>
-                </div>
-                <div id="audio-tab" class="tab-content">
-                    <div class="audio-player">
-                        <input type="file" id="audio-file" accept="audio/*" style="margin-bottom: 12px;">
-                        <div>
-                            <button class="btn btn-secondary" id="play-audio">Play</button>
-                            <button class="btn btn-secondary" id="pause-audio">Pause</button>
-                            <button class="btn btn-secondary" id="stop-audio">Stop</button>
-                        </div>
-                        <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
-                            <span>Thời gian: </span>
-                            <span id="audio-time">00:00 / 00:00</span>
-                        </div>
-                        <input type="range" id="audio-seeker" min="0" max="100" value="0" style="width: 100%; margin-top: 8px;">
-                        <div style="margin-top: 12px; display: flex; justify-content: space-between;">
-                            <span>Âm lượng: </span>
-                            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" style="width: 150px;">
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="navbar"></div>
+    <div id="sidebar"></div>
+    <main class="main-container">
+        <div class="ws-toolbar">
+            <h1 class="section-title" style="margin-bottom:0">🖥️ Workspace</h1>
+            <span class="toolbar-hint">Kéo thả để sắp xếp · ⋯ để đổi link</span>
         </div>
 
-        <!-- Splitter -->
-        <div class="splitter" id="splitter"></div>
-
-        <!-- Right Pane: Notes -->
-        <div class="split-pane">
-            <div class="split-pane-header">
-                <h2>📝 Ghi chú</h2>
-                <div class="control-group">
-                    <button class="btn btn-secondary" id="clear-notes">Xóa</button>
-                    <button class="btn btn-primary" id="save-notes">Lưu</button>
-                </div>
-            </div>
-            <div class="split-pane-content">
-                <textarea id="notes-editor" class="notes-editor" placeholder="Ghi chú của bạn ở đây..."></textarea>
-            </div>
-        </div>
-    </div>
+        <div class="ws-grid" id="ws-grid"></div>
+    </main>
 
     <script type="module">
         import { ROOT } from '../../javascript.js';
 
-        // ========== Splitter Resize ==========
-        const splitter = document.getElementById('splitter');
-        const leftPane = document.querySelector('.split-pane:nth-child(1)');
-        const rightPane = document.querySelector('.split-pane:nth-child(2)');
+        const STORAGE_KEY = 'workspace-yt-tiles';
 
-        let isResizing = false;
+        // ── State ──────────────────────────────────────────────
+        let tiles = loadTiles();
+        let dragSrcIndex = null;
 
-        splitter.addEventListener('mousedown', e => {
-            isResizing = true;
-            document.body.style.cursor = 'col-resize';
-            e.preventDefault();
-        });
+        function loadTiles() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : defaultTiles();
+            } catch { return defaultTiles(); }
+        }
 
-        document.addEventListener('mousemove', e => {
-            if (!isResizing) return;
-            const containerWidth = document.querySelector('.split-container').clientWidth;
-            const leftWidth = e.clientX - leftPane.getBoundingClientRect().left;
-            const minWidth = 200;
-            const maxWidth = containerWidth - minWidth - 4; // 4px splitter width
-            if (leftWidth < minWidth) leftPane.style.width = `${minWidth}px`;
-            else if (leftWidth > maxWidth) leftPane.style.width = `${maxWidth}px`;
-            else leftPane.style.width = `${leftWidth}px`;
-        });
+        function defaultTiles() {
+            return [
+                { id: uid(), url: '', title: 'YouTube 1' },
+                { id: uid(), url: '', title: 'YouTube 2' },
+            ];
+        }
 
-        document.addEventListener('mouseup', e => {
-            if (isResizing) {
-                isResizing = false;
-                document.body.style.cursor = '';
+        function saveTiles() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tiles));
+        }
+
+        function uid() {
+            return Math.random().toString(36).slice(2, 10);
+        }
+
+        // ── YouTube URL → embed URL ────────────────────────────
+        function toEmbedUrl(raw) {
+            if (!raw) return '';
+            raw = raw.trim();
+            let videoId = null;
+            let listId = null;
+
+            // Already embed
+            if (raw.includes('youtube.com/embed/')) return raw;
+
+            try {
+                const u = new URL(raw.startsWith('http') ? raw : 'https://' + raw);
+                videoId = u.searchParams.get('v');
+                listId  = u.searchParams.get('list');
+
+                // youtu.be/xxxxx
+                if (!videoId && u.hostname === 'youtu.be') {
+                    videoId = u.pathname.slice(1);
+                }
+                // /live/xxx  or  /shorts/xxx
+                if (!videoId) {
+                    const m = u.pathname.match(/\/(live|shorts)\/([^/?]+)/);
+                    if (m) videoId = m[2];
+                }
+            } catch { return ''; }
+
+            if (listId && !videoId) {
+                return `https://www.youtube.com/embed/videoseries?list=${listId}&autoplay=1`;
             }
-        });
+            if (videoId) {
+                return `https://www.youtube.com/embed/${videoId}?autoplay=1${listId ? '&list=' + listId : ''}`;
+            }
+            return '';
+        }
 
-        // ========== Tab Switching ==========
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const tabId = btn.dataset.tab + '-tab';
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                document.getElementById(tabId).classList.add('active');
+        // ── Render ─────────────────────────────────────────────
+        function render() {
+            const grid = document.getElementById('ws-grid');
+            grid.innerHTML = '';
+
+            tiles.forEach((tile, idx) => {
+                const el = makeTile(tile, idx);
+                grid.appendChild(el);
             });
-        });
 
-        // ========== Webview ==========
-        const urlInput = document.getElementById('url-input');
-        const loadWebBtn = document.getElementById('load-web');
-        const webview = document.getElementById('webview');
-
-        loadWebBtn.addEventListener('click', () => {
-            let url = urlInput.value.trim();
-            if (!url) return;
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                url = 'https://' + url;
-            }
-            webview.src = url;
-        });
-
-        urlInput.addEventListener('keypress', e => {
-            if (e.key === 'Enter') {
-                loadWebBtn.click();
-            }
-        });
-
-        // ========== Audio Player ==========
-        const audioFileInput = document.getElementById('audio-file');
-        const playAudioBtn = document.getElementById('play-audio');
-        const pauseAudioBtn = document.getElementById('pause-audio');
-        const stopAudioBtn = document.getElementById('stop-audio');
-        const audioTimeSpan = document.getElementById('audio-time');
-        const audioSeeker = document.getElementById('audio-seeker');
-        const volumeSlider = document.getElementById('volume');
-
-        let audio = new Audio();
-        let audioDuration = 0;
-
-        audioFileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                audio.src = URL.createObjectURL(file);
-                audio.load();
-            }
-        });
-
-        playAudioBtn.addEventListener('click', () => {
-            audio.play();
-        });
-
-        pauseAudioBtn.addEventListener('click', () => {
-            audio.pause();
-        });
-
-        stopAudioBtn.addEventListener('click', () => {
-            audio.pause();
-            audio.currentTime = 0;
-        });
-
-        audio.addEventListener('loadedmetadata', () => {
-            audioDuration = audio.duration;
-            audioSeeker.max = Math.floor(audioDuration);
-            updateTimeDisplay();
-        });
-
-        audio.addEventListener('timeupdate', () => {
-            audioSeeker.value = Math.floor(audio.currentTime);
-            updateTimeDisplay();
-        });
-
-        audioSeeker.addEventListener('input', e => {
-            audio.currentTime = e.target.value;
-        });
-
-        volumeSlider.addEventListener('input', e => {
-            audio.volume = e.target.value;
-        });
-
-        function updateTimeDisplay() {
-            const current = Math.floor(audio.currentTime);
-            const duration = Math.floor(audio.duration);
-            const format = (t) => {
-                const h = Math.floor(t / 3600).toString().padStart(2, '0');
-                const m = Math.floor((t % 3600) / 60).toString().padStart(2, '0');
-                const s = (t % 60).toString().padStart(2, '0');
-                return `${h}:${m}:${s}`;
-            };
-            audioTimeSpan.textContent = `${format(current)} / ${format(duration)}`;
+            // Add button
+            const addBtn = document.createElement('div');
+            addBtn.className = 'yt-tile-add';
+            addBtn.innerHTML = '<span class="plus">+</span><span>Thêm tab YouTube</span>';
+            addBtn.onclick = () => addTile();
+            grid.appendChild(addBtn);
         }
 
-        // ========== Notes Editor ==========
-        const notesEditor = document.getElementById('notes-editor');
-        const clearNotesBtn = document.getElementById('clear-notes');
-        const saveNotesBtn = document.getElementById('save-notes');
+        function makeTile(tile, idx) {
+            const el = document.createElement('div');
+            el.className = 'yt-tile';
+            el.draggable = true;
+            el.dataset.idx = idx;
 
-        const savedNotes = localStorage.getItem('workspace-notes');
-        if (savedNotes) {
-            notesEditor.value = savedNotes;
+            const embedUrl = toEmbedUrl(tile.url);
+
+            el.innerHTML = `
+                <div class="tile-header">
+                    <div class="tile-island">
+                        <div class="island-dot" style="${embedUrl ? '' : 'background:var(--border);animation:none'}"></div>
+                    </div>
+                    <div class="tile-title">${tile.title || 'YouTube'}</div>
+                    <button class="tile-menu-btn" title="Cài đặt">⋯</button>
+                </div>
+
+                <div class="tile-popover" id="pop-${tile.id}">
+                    <input class="popover-input" type="text" placeholder="Dán link YouTube vào đây..."
+                           value="${tile.url || ''}" id="inp-${tile.id}">
+                    <button class="popover-btn" id="save-${tile.id}">Áp dụng</button>
+                    <button class="popover-btn popover-btn-danger" id="del-${tile.id}">Xóa tab này</button>
+                </div>
+
+                <div class="tile-embed">
+                    ${embedUrl
+                        ? `<iframe src="${embedUrl}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
+                        : `<div class="tile-placeholder">
+                               <span class="icon">▶️</span>
+                               <span>Nhấn ⋯ để dán link YouTube</span>
+                           </div>`
+                    }
+                </div>
+            `;
+
+            // Menu toggle
+            const menuBtn = el.querySelector('.tile-menu-btn');
+            const popover = el.querySelector(`#pop-${tile.id}`);
+            menuBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                // Close others
+                document.querySelectorAll('.tile-popover.open').forEach(p => {
+                    if (p !== popover) p.classList.remove('open');
+                });
+                popover.classList.toggle('open');
+                if (popover.classList.contains('open')) {
+                    el.querySelector(`#inp-${tile.id}`).focus();
+                }
+            });
+
+            // Save link
+            el.querySelector(`#save-${tile.id}`).addEventListener('click', () => {
+                const val = el.querySelector(`#inp-${tile.id}`).value.trim();
+                tiles[idx].url = val;
+                // Auto-title from URL if blank
+                if (!tiles[idx].title || tiles[idx].title.startsWith('YouTube')) {
+                    tiles[idx].title = val ? 'YouTube ' + (idx + 1) : 'YouTube ' + (idx + 1);
+                }
+                saveTiles();
+                render();
+            });
+
+            // Allow pressing Enter in input
+            el.querySelector(`#inp-${tile.id}`).addEventListener('keydown', e => {
+                if (e.key === 'Enter') el.querySelector(`#save-${tile.id}`).click();
+            });
+
+            // Delete tile
+            el.querySelector(`#del-${tile.id}`).addEventListener('click', () => {
+                tiles.splice(idx, 1);
+                saveTiles();
+                render();
+            });
+
+            // ── Drag & drop ──
+            el.addEventListener('dragstart', e => {
+                dragSrcIndex = idx;
+                setTimeout(() => el.classList.add('dragging'), 0);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            el.addEventListener('dragend', () => {
+                el.classList.remove('dragging');
+                document.querySelectorAll('.yt-tile').forEach(t => t.classList.remove('drag-over'));
+            });
+
+            el.addEventListener('dragover', e => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (dragSrcIndex !== idx) el.classList.add('drag-over');
+            });
+
+            el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+
+            el.addEventListener('drop', e => {
+                e.preventDefault();
+                el.classList.remove('drag-over');
+                if (dragSrcIndex === null || dragSrcIndex === idx) return;
+                const moved = tiles.splice(dragSrcIndex, 1)[0];
+                tiles.splice(idx, 0, moved);
+                dragSrcIndex = null;
+                saveTiles();
+                render();
+            });
+
+            return el;
         }
 
-        notesEditor.addEventListener('input', () => {
-            // Auto-save every change? Or on save button. Let's do on input for simplicity.
-            localStorage.setItem('workspace-notes', notesEditor.value);
+        function addTile() {
+            tiles.push({ id: uid(), url: '', title: 'YouTube ' + (tiles.length + 1) });
+            saveTiles();
+            render();
+            // Auto-open popover on new tile
+            setTimeout(() => {
+                const pops = document.querySelectorAll('.tile-popover');
+                const last = pops[pops.length - 1];
+                if (last) {
+                    last.classList.add('open');
+                    last.querySelector('.popover-input')?.focus();
+                }
+            }, 50);
+        }
+
+        // Close popovers when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.tile-popover.open').forEach(p => p.classList.remove('open'));
         });
 
-        clearNotesBtn.addEventListener('click', () => {
-            if (confirm('Xóa toàn bộ ghi chú?')) {
-                notesEditor.value = '';
-                localStorage.removeItem('workspace-notes');
-            }
-        });
-
-        saveNotesBtn.addEventListener('click', () => {
-            alert('Ghi chú đã được lưu tự động!');
-        });
+        render();
     </script>
 </body>
 </html>
